@@ -4,12 +4,12 @@
     "slug": "ContainerTrackingApp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/tracking-app.png",
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FEF9B0"
+      "backgroundColor":"#DCF2F1",
     },
     "plugins": [
       [
@@ -24,10 +24,11 @@
     ],
     "ios": {
       "supportsTablet": true
+      
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.sam2002tani.ContainerTrackingApp"
