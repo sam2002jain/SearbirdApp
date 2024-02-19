@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
+
+
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image, Platform, TouchableHighlight } from 'react-native';
+
+
+
 
 export default function App() {
   const [companyName, setCompanyName] = useState('');
@@ -11,23 +16,33 @@ export default function App() {
   const [buttonPressed, setButtonPressed] = useState(false);
 
   const handleGenerateOTP = () => {
-    // Implement your OTP generation logic here
-    console.log('Generating OTP');
+    if (companyName && branchName && username && password) {
+      console.log('Generating OTP');
+      alert('Otp successfully!');
+    } else {
+      alert('Please fill in all fields');
+    }
   };
 
   const handleLogin = () => {
-    // Implement your login logic here
-    console.log('Logging in with company name:', companyName,'Logging in with branchName:', branchName, 'Logging in with username:', username, 'Logging in with password :',password, otp);
+    if (companyName && branchName && username && password && otp) {
+      console.log('Logging in with company name:', companyName,'Logging in with branchName:', branchName, 'Logging in with username:', username, 'Logging in with password :',password);
+      alert('you are successfully login!');
+    } else {
+      alert('Please fill in all fields');
+    }
   };
 
   const handleForgotPassword = () => {
     // Implement your forgot password logic here
     console.log('Forgot password');
+    
+    
   };
 
   const buttonStyles = [
     styles.button,
-    { backgroundColor: buttonPressed ? 'darkgreen' : '#DDDDDD' } // Change color on press
+    { backgroundColor: buttonPressed ? 'darkgreen' : '#6895D2' }
   ];
 
   const handleButtonPress = () => {
@@ -38,7 +53,6 @@ export default function App() {
     setButtonPressed(false);
   };
 
-  // Rest of your code remains unchanged
 
 return (
   <ImageBackground source={require('/Users/a/ContainerTrackingApp/assets/bg.png')} style={styles.background}>
@@ -84,16 +98,22 @@ return (
           <Text>Generate OTP </Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity
-  style={[buttonStyles, styles.loginButton]} // Apply loginButton style here
-  onPress={handleLogin}
->
-  <Text>Login </Text>
-</TouchableOpacity>
 
-      <TouchableOpacity onPress={handleForgotPassword}>
-        <Text style={styles.forgotPassword}>Forgot Password?</Text>
+      <TouchableOpacity
+        style={[buttonStyles, styles.loginButton]} 
+        onPress={handleLogin}
+      >
+        <Text>Login </Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[buttonStyles, styles.forgotbutton]} 
+        onPress={handleForgotPassword}
+      >
+        <Text>forget password ? </Text>
+      </TouchableOpacity>
+
+   
       <StatusBar style="auto" />
     </View>
   </ImageBackground>
@@ -112,7 +132,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 100,
-    height: 100,
+    height: 90,
     marginBottom: 20,
   },
   title: {
@@ -128,7 +148,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingHorizontal: 10,
     backgroundColor: 'white',
-    borderRadius: 10, // Rounded corners for input fields
+    borderRadius: 10, 
   },
   otpContainer: {
     flexDirection: 'row',
@@ -150,18 +170,24 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 10,
     width:130,
-    borderRadius: 20, // Rounded corners for the button
+    borderRadius: 20, 
     alignItems: 'center',
     justifyContent: 'center',
   },
   loginButton: {
-    width: 200, // Adjust the width as needed
+    width: 200, 
     backgroundColor: '#40A2D8',
   },
-  forgotPassword: {
+  forgotbutton: {
     marginTop: 10,
-    color: 'blue',
-    textDecorationLine: 'underline',
+    padding: 10,
+    width:150,
+    borderRadius: 20, 
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  
 });
+
+
 
