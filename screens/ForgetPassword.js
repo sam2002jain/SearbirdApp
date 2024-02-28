@@ -1,14 +1,31 @@
 
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image } from 'react-native';
+import {useNavigation} from '@react-navigation/native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image, Picker } from 'react-native';
 
 export default function ForgetPassword() {
+  const navigation = useNavigation();
   const [companyName, setCompanyName] = useState('');
   const [branchName, setBranchName] = useState('');
   const [username, setUsername] = useState('');
   const [mobileNo, setMobileNo] = useState('');
   const [otp, setOtp] = useState('');
   const [buttonPressed, setButtonPressed] = useState(false);
+
+
+
+  const companyData = [
+    { name: 'Company A', branches: ['Branch X'] },
+    { name: 'Company B', branches: ['Branch Y', 'Branch Z'] },
+    // Add more companies and their branches here as needed
+  ];
+
+  // Function to get branches based on selected company
+  const getBranches = (company) => {
+    const selectedCompany = companyData.find(item => item.name === company);
+    return selectedCompany ? selectedCompany.branches : [];
+  };
+
 
   const handleGenerateOTP = () => {
     if (companyName && branchName && username && mobileNo) {
@@ -23,8 +40,11 @@ export default function ForgetPassword() {
     if (companyName && branchName && username && mobileNo && otp) {
       console.log('Submitting forget password request');
       alert('Forget password request submitted successfully!');
+      navigation.navigate('ChangePassword');
+      
     } else {
       alert('Please fill in all fields');
+      
     }
   };
 
@@ -45,18 +65,30 @@ export default function ForgetPassword() {
     <ImageBackground source={require('/Users/a/ContainerTrackingApp/assets/bg.png')} style={styles.background}>
       <View style={styles.container}>
         <Text style={styles.title}>Forget Password</Text>
-        <TextInput
+        <Picker
+          selectedValue={companyName}
           style={styles.input}
-          placeholder="Company Name"
-          onChangeText={setCompanyName}
-          value={companyName}
-        />
-        <TextInput
+          onValueChange={(itemValue) => {
+            setCompanyName(itemValue);
+            const branches = getBranches(itemValue);
+            setBranchName(branches[0]); // Auto-select the first branch
+          }}
+        >
+          <Picker.Item label="Select Company" value="" />
+          {companyData.map((company, index) => (
+            <Picker.Item key={index} label={company.name} value={company.name} />
+          ))}
+        </Picker>
+        <Picker
+          selectedValue={branchName}
           style={styles.input}
-          placeholder="Branch Name"
-          onChangeText={setBranchName}
-          value={branchName}
-        />
+          onValueChange={(itemValue) => setBranchName(itemValue)}
+        >
+          <Picker.Item label="Select Branch" value="" />
+          {getBranches(companyName).map((branch, index) => (
+            <Picker.Item key={index} label={branch} value={branch} />
+          ))}
+        </Picker>
         <TextInput
           style={styles.input}
           placeholder="Username"
@@ -87,6 +119,7 @@ export default function ForgetPassword() {
         <TouchableOpacity
           style={[buttonStyles, styles.submitButton]}
           onPress={handleSubmit}
+          
         >
           <Text>Submit</Text>
         </TouchableOpacity>
@@ -114,6 +147,7 @@ const styles = StyleSheet.create({
   input: {
     width: 310,
     height: 40,
+    fontSize:15,
     borderColor: 'gray',
     borderWidth: 1,
     marginTop: 20,
