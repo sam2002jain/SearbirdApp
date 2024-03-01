@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
+
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image } from 'react-native';
 
 export default function Changepass() {
@@ -13,6 +15,24 @@ export default function Changepass() {
   const [password2, setPassword2] = useState('');
   const [buttonPressed, setButtonPressed] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false); 
+  
+  // Function to toggle the password visibility state 
+  const toggleShowPassword = () => { 
+      setShowPassword(!showPassword); 
+  }; 
+
+  const companyData = [
+    { name: 'Company A', branches: ['Branch X'] },
+    { name: 'Company B', branches: ['Branch Y', 'Branch Z'] },
+    // Add more companies and their branches here as needed
+  ];
+
+  // Function to get branches based on selected company
+  const getBranches = (company) => {
+    const selectedCompany = companyData.find(item => item.name === company);
+    return selectedCompany ? selectedCompany.branches : [];
+  };
 
 
   const handleSubmit = () => {
@@ -42,18 +62,30 @@ export default function Changepass() {
     <ImageBackground source={require('/Users/a/ContainerTrackingApp/assets/bg.png')} style={styles.background}>
       <View style={styles.container}>
         <Text style={styles.title}>Change Password</Text>
-        <TextInput
+        <Picker
+          selectedValue={companyName}
           style={styles.input}
-          placeholder="Company Name"
-          onChangeText={setCompanyName}
-          value={companyName}
-        />
-        <TextInput
+          onValueChange={(itemValue) => {
+            setCompanyName(itemValue);
+            const branches = getBranches(itemValue);
+            setBranchName(branches[0]); // Auto-select the first branch
+          }}
+        >
+          <Picker.Item label="Select Company" value="" />
+          {companyData.map((company, index) => (
+            <Picker.Item key={index} label={company.name} value={company.name} />
+          ))}
+        </Picker>
+        <Picker
+          selectedValue={branchName}
           style={styles.input}
-          placeholder="Branch Name"
-          onChangeText={setBranchName}
-          value={branchName}
-        />
+          onValueChange={(itemValue) => setBranchName(itemValue)}
+        >
+          <Picker.Item label="Select Branch" value="" />
+          {getBranches(companyName).map((branch, index) => (
+            <Picker.Item key={index} label={branch} value={branch} />
+          ))}
+        </Picker>
         <TextInput
           style={styles.input}
           placeholder="Username"
@@ -65,6 +97,7 @@ export default function Changepass() {
           placeholder="Enter Password"
           onChangeText={setPassword}
           value={password}
+          secureTextEntry={!showPassword}
         />
 
         <TextInput
@@ -72,6 +105,7 @@ export default function Changepass() {
           placeholder="Confirm Password"
           onChangeText={setPassword2}
           value={password2}
+          secureTextEntry={!showPassword}
         />
         
 

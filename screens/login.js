@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { MaterialCommunityIcons } from '@expo/vector-icons'; 
+import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image, Platform, Picker } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image, Platform} from 'react-native';
 
 export default function Login() {
   const navigation = useNavigation();
@@ -12,6 +14,13 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [buttonPressed, setButtonPressed] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false); 
+  
+    // Function to toggle the password visibility state 
+    const toggleShowPassword = () => { 
+        setShowPassword(!showPassword); 
+    }; 
 
  
   const companyData = [
@@ -103,8 +112,16 @@ export default function Login() {
           placeholder="Password"
           onChangeText={setPassword}
           value={password}
-          secureTextEntry={true}
+          secureTextEntry={!showPassword}
         />
+        {/* <MaterialCommunityIcons 
+            name={showPassword ? 'eye-off' : 'eye'} 
+            size={24} 
+            color="#aaa"
+            style={styles.icon} 
+            onPress={toggleShowPassword} 
+          /> 
+         */}
         <View style={styles.otpContainer}>
           <TextInput
             style={styles.inputOtp}
@@ -148,7 +165,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   container: {
-    flex: 1,
+    flexDirection:'vertical',
     marginBottom: 5,
     marginTop: 10,
     alignItems: 'center',
@@ -171,6 +188,7 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderWidth: 1,
     marginTop: 20,
+    paddingRight:10,
     paddingHorizontal: 10,
     backgroundColor: 'white',
     borderRadius: 10,
@@ -203,6 +221,10 @@ const styles = StyleSheet.create({
     width: 200,
     backgroundColor: '#40A2D8',
   },
+//   icon: { 
+//     marginLeft: 10,
+
+// }, 
   forgotbutton: {
     marginTop: 10,
     padding: 10,

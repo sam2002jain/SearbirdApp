@@ -1,7 +1,9 @@
 
 import React, { useState } from 'react';
 import {useNavigation} from '@react-navigation/native';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image, Picker } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image } from 'react-native';
 
 export default function ForgetPassword() {
   const navigation = useNavigation();
