@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image, Platform} from 'react-native';
