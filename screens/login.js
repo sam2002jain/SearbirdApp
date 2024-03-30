@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image, Platform} from 'react-native';
 
@@ -13,27 +14,40 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [buttonPressed, setButtonPressed] = useState(false);
+  const [companyData, setCompanyData] = useState([]);
+  const [branchData, setBranchData] = useState([]);
 
   const [showPassword, setShowPassword] = useState(false); 
   
-    // Function to toggle the password visibility state 
-    const toggleShowPassword = () => { 
-        setShowPassword(!showPassword); 
-    }; 
+  // Function to toggle the password visibility state 
+  const toggleShowPassword = () => { 
+    setShowPassword(!showPassword); 
+  }; 
 
- 
-  const companyData = [
-    { name: 'Company A', branches: ['Branch X'] },
-    { name: 'Company B', branches: ['Branch Y', 'Branch Z'] },
-    // Add more companies and their branches here as needed
-  ];
+  // Fetch company names from backend API
+  useEffect(() => {
+    axios.get('http://localhost:8080/Login')
+      .then(response => {
+        setCompanyData(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching companies:', error);
+      });
+  }, []);
 
-  // Function to get branches based on selected company
-  const getBranches = (company) => {
-    const selectedCompany = companyData.find(item => item.name === company);
-    return selectedCompany ? selectedCompany.branches : [];
+  // Function to fetch branches based on selected company
+  const fetchBranches = (company) => {
+    axios.get(`http://localhost:8080/Login/${company}/branches`)
+      .then(response => {
+        setBranchData(response.data);
+        setBranchName(response.data[0]); // Auto-select the first branch
+      })
+      .catch(error => {
+        console.error('Error fetching branches:', error);
+      });
   };
 
+  // Function to generate OTP
   const handleGenerateOTP = () => {
     if (companyName && branchName && username && password) {
       console.log('Generating OTP');
@@ -43,36 +57,39 @@ export default function Login() {
     }
   };
 
-  const handleLogin = () => {
-    if (companyName && branchName && username && password && otp) {
-      console.log('Logging in with company name:', companyName, 'Logging in with branchName:', branchName, 'Logging in with username:', username, 'Logging in with password :', password);
-      alert('you are successfully login!');
-      
-    } else {
-      alert('Please fill in all fields');
+  // Function to handle login
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post('http://localhost:8080/login', {
+        companyName,
+        branchName,
+        username,
+        password,
+        otp // Include OTP if needed
+      });
+      // Handle successful login response
+      console.log(response.data); // Log the response from the server
+      alert('Login Successful');
+    } catch (error) {
+      // Handle login error
+      console.error('Login error:', error.response.data); // Log the error response
+      alert('Login Failed');
     }
   };
 
-  const handleForget = ()=> {
+  // Function to navigate to forget password screen
+  const handleForget = () => {
     navigation.navigate('ForgetPassword');
   }
 
+  // Styles for buttons
   const buttonStyles = [
     styles.button,
     { backgroundColor: buttonPressed ? 'darkgreen' : '#6895D2' }
   ];
 
-  const handleButtonPress = () => {
-    setButtonPressed(true);
-  };
-
-  const handleButtonRelease = () => {
-    setButtonPressed(false);
-  };
-
   return (
     <ImageBackground source={require('/Users/a/ContainerTrackingApp/assets/bg.png')} style={styles.background}>
-
       <View style={styles.container}>
         <Image source={require('/Users/a/ContainerTrackingApp/assets/logo.png')} style={styles.logo} />
         <Text style={styles.title}>Seabird CFS Container Tracking</Text>
@@ -81,13 +98,12 @@ export default function Login() {
           style={styles.input}
           onValueChange={(itemValue) => {
             setCompanyName(itemValue);
-            const branches = getBranches(itemValue);
-            setBranchName(branches[0]); // Auto-select the first branch
+            fetchBranches(itemValue); // Fetch branches for selected company
           }}
         >
           <Picker.Item label="Select Company" value="" />
-          {companyData.map((company, index) => (
-            <Picker.Item key={index} label={company.name} value={company.name} />
+          {companyData.map(company => (
+            <Picker.Item key={company.id} label={company.name} value={company.name} />
           ))}
         </Picker>
         <Picker
@@ -96,8 +112,8 @@ export default function Login() {
           onValueChange={(itemValue) => setBranchName(itemValue)}
         >
           <Picker.Item label="Select Branch" value="" />
-          {getBranches(companyName).map((branch, index) => (
-            <Picker.Item key={index} label={branch} value={branch} />
+          {branchData.map(branch => (
+            <Picker.Item key={branch.id} label={branch.name} value={branch.name} />
           ))}
         </Picker>
         <TextInput
@@ -113,15 +129,8 @@ export default function Login() {
           value={password}
           secureTextEntry={!showPassword}
         />
-        {/* <MaterialCommunityIcons 
-            name={showPassword ? 'eye-off' : 'eye'} 
-            size={24} 
-            color="#aaa"
-            style={styles.icon} 
-            onPress={toggleShowPassword} 
-          /> 
-         */}
-        <View style={styles.otpContainer}>
+
+<View style={styles.otpContainer}>
           <TextInput
             style={styles.inputOtp}
             placeholder="OTP"
@@ -154,6 +163,7 @@ export default function Login() {
         <StatusBar style="auto" />
       </View>
     </ImageBackground>
+       
   );
 }
 
@@ -234,3 +244,4 @@ const styles = StyleSheet.create({
   },
 
 });
+
