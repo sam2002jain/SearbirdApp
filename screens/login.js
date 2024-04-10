@@ -26,7 +26,7 @@ export default function Login() {
 
   // Fetch company names from backend API
   useEffect(() => {
-    axios.get('http://localhost:8080/Login')
+    axios.get('http://localhost:8080/user/getAll')
       .then(response => {
         setCompanyData(response.data);
       })
@@ -37,7 +37,7 @@ export default function Login() {
 
   // Function to fetch branches based on selected company
   const fetchBranches = (company) => {
-    axios.get(`http://localhost:8080/Login/${company}/branches`)
+    axios.get(`http://localhost:8080/student/${company}/branch_id`)
       .then(response => {
         setBranchData(response.data);
         setBranchName(response.data[0]); // Auto-select the first branch
