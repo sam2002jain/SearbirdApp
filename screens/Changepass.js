@@ -61,6 +61,7 @@ export default function Changepass() {
   return (
     <ImageBackground source={require('/Users/a/ContainerTrackingApp/assets/bg.png')} style={styles.background}>
       <View style={styles.container}>
+      <Image source={require('/Users/a/ContainerTrackingApp/assets/logo.png')} style={styles.logo} />
         <Text style={styles.title}>Change Password</Text>
         <Picker
           selectedValue={companyName}
@@ -145,6 +146,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: 'white',
     borderRadius: 10,
+  },
+  logo: {
+    width: 100,
+    height: 60,
+    marginBottom: 5,
   },
   
   inputOtp: {

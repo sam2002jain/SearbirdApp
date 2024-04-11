@@ -66,6 +66,7 @@ export default function ForgetPassword() {
   return (
     <ImageBackground source={require('/Users/a/ContainerTrackingApp/assets/bg.png')} style={styles.background}>
       <View style={styles.container}>
+      <Image source={require('/Users/a/ContainerTrackingApp/assets/logo.png')} style={styles.logo} />
         <Text style={styles.title}>Forget Password</Text>
         <Picker
           selectedValue={companyName}
@@ -180,6 +181,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  logo: {
+    width: 100,
+    height: 60,
+    marginBottom: 5,
   },
   submitButton: {
     width: 200,

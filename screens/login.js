@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image, Platform} from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image} from 'react-native';
 
 export default function Login() {
   const navigation = useNavigation();
@@ -13,41 +13,33 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
+  const [selectedBCompany, setSelectedCompany] = useState('');
+  const [getcompany, setGetCompany] = useState([]);
+  const [getbranch, setGetBranch] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
   const [buttonPressed, setButtonPressed] = useState(false);
-  const [companyData, setCompanyData] = useState([]);
-  const [branchData, setBranchData] = useState([]);
 
-  const [showPassword, setShowPassword] = useState(false); 
-  
-  // Function to toggle the password visibility state 
-  const toggleShowPassword = () => { 
-    setShowPassword(!showPassword); 
-  }; 
-
-  // Fetch company names from backend API
   useEffect(() => {
-    axios.get('http://localhost:8080/user/getAll')
-      .then(response => {
-        setCompanyData(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching companies:', error);
-      });
+    getCompany();
   }, []);
 
-  // Function to fetch branches based on selected company
-  const fetchBranches = (company) => {
-    axios.get(`http://localhost:8080/student/${company}/branch_id`)
+  const getCompany = () => {
+    axios.get(`http://localhost:8080/user/getCompany`)
       .then(response => {
-        setBranchData(response.data);
-        setBranchName(response.data[0]); // Auto-select the first branch
+        setGetCompany(response.data);
       })
-      .catch(error => {
-        console.error('Error fetching branches:', error);
-      });
-  };
+      .catch(error => console.error('Error fetching companies:', error));
+  }
 
-  // Function to generate OTP
+  const getBranch = (id) => {
+    axios.get(`http://localhost:8080/user/getBranch/${id}`)
+      .then(response => {
+        setGetBranch(response.data);
+        setSelectedCompany(id);
+      })
+      .catch(error => console.error('Error fetching branches:', error));
+  }
+
   const handleGenerateOTP = () => {
     if (companyName && branchName && username && password) {
       console.log('Generating OTP');
@@ -57,32 +49,46 @@ export default function Login() {
     }
   };
 
-  // Function to handle login
   const handleLogin = async () => {
+    if (!selectedBCompany) {
+      alert("Please select the company.");
+      return;
+    }
+
+    if (!branchName) {
+      alert("Please select the branch.");
+      return;
+    }
+
+    if (!username) {
+      alert("Username is required.");
+      return;
+    }
+
+    if (!password) {
+      alert("Password is required.");
+      return;
+    }
+
+    if (!otp) {
+      alert("OTP is required.");
+      return;
+    }
+
     try {
-      const response = await axios.post('http://localhost:8080/login', {
-        companyName,
-        branchName,
-        username,
-        password,
-        otp // Include OTP if needed
-      });
-      // Handle successful login response
+      const response = await axios.get(`http://localhost:8080/user/login?company=${selectedBCompany}&branch=${branchName}&user=${username}&password=${password}&otp=${otp}`);
       console.log(response.data); // Log the response from the server
-      alert('Login Successful');
+      alert(response.data);
     } catch (error) {
-      // Handle login error
       console.error('Login error:', error.response.data); // Log the error response
       alert('Login Failed');
     }
   };
 
-  // Function to navigate to forget password screen
   const handleForget = () => {
     navigation.navigate('ForgetPassword');
   }
 
-  // Styles for buttons
   const buttonStyles = [
     styles.button,
     { backgroundColor: buttonPressed ? 'darkgreen' : '#6895D2' }
@@ -91,19 +97,17 @@ export default function Login() {
   return (
     <ImageBackground source={require('/Users/a/ContainerTrackingApp/assets/bg.png')} style={styles.background}>
       <View style={styles.container}>
-        <Image source={require('/Users/a/ContainerTrackingApp/assets/logo.png')} style={styles.logo} />
+      <Image source={require('/Users/a/ContainerTrackingApp/assets/logo.png')} style={styles.logo} />
+        <Image style={styles.logo} />
         <Text style={styles.title}>Seabird CFS Container Tracking</Text>
         <Picker
-          selectedValue={companyName}
+          selectedValue={selectedBCompany}
           style={styles.input}
-          onValueChange={(itemValue) => {
-            setCompanyName(itemValue);
-            fetchBranches(itemValue); // Fetch branches for selected company
-          }}
+          onValueChange={(itemValue) => getBranch(itemValue)}
         >
           <Picker.Item label="Select Company" value="" />
-          {companyData.map(company => (
-            <Picker.Item key={company.id} label={company.name} value={company.name} />
+          {getcompany.map((company, index) => (
+            <Picker.Item key={index} label={company.companyName} value={company.companyId} />
           ))}
         </Picker>
         <Picker
@@ -112,8 +116,8 @@ export default function Login() {
           onValueChange={(itemValue) => setBranchName(itemValue)}
         >
           <Picker.Item label="Select Branch" value="" />
-          {branchData.map(branch => (
-            <Picker.Item key={branch.id} label={branch.name} value={branch.name} />
+          {getbranch.map((branch, index) => (
+            <Picker.Item key={index} label={branch.branchName} value={branch.branchId} />
           ))}
         </Picker>
         <TextInput
@@ -129,8 +133,7 @@ export default function Login() {
           value={password}
           secureTextEntry={!showPassword}
         />
-
-<View style={styles.otpContainer}>
+        <View style={styles.otpContainer}>
           <TextInput
             style={styles.inputOtp}
             placeholder="OTP"
@@ -144,26 +147,21 @@ export default function Login() {
             <Text>Generate OTP </Text>
           </TouchableOpacity>
         </View>
-
         <TouchableOpacity
           style={[buttonStyles, styles.loginButton]}
           onPress={handleLogin}
         >
           <Text>Login </Text>
         </TouchableOpacity>
-
         <TouchableOpacity
           style={[buttonStyles, styles.forgotbutton]}
           onPress={handleForget}
         >
           <Text>Forget password ? </Text>
         </TouchableOpacity>
-
-
         <StatusBar style="auto" />
       </View>
     </ImageBackground>
-       
   );
 }
 
@@ -174,7 +172,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   container: {
-    flexDirection:'vertical',
     marginBottom: 5,
     marginTop: 10,
     alignItems: 'center',
@@ -182,8 +179,8 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 100,
-    height: 90,
-    marginBottom: 20,
+    height: 60,
+    marginBottom: 5,
   },
   title: {
     fontSize: 20,
@@ -193,11 +190,11 @@ const styles = StyleSheet.create({
   input: {
     width: 310,
     height: 40,
-    fontSize:15,
+    fontSize: 15,
     borderColor: 'gray',
     borderWidth: 1,
     marginTop: 20,
-    paddingRight:10,
+    paddingRight: 10,
     paddingHorizontal: 10,
     backgroundColor: 'white',
     borderRadius: 10,
@@ -230,10 +227,6 @@ const styles = StyleSheet.create({
     width: 200,
     backgroundColor: '#40A2D8',
   },
-//   icon: { 
-//     marginLeft: 10,
-
-// }, 
   forgotbutton: {
     marginTop: 10,
     padding: 10,
@@ -242,6 +235,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
 });
-
