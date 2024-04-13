@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image} from 'react-native';
 
-export default function Login() {
+export default function login() {
   const navigation = useNavigation();
 
   const [companyName, setCompanyName] = useState('');

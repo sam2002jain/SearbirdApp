@@ -1,54 +1,103 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
-
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image } from 'react-native';
 
 export default function ForgetPassword() {
   const navigation = useNavigation();
+
   const [companyName, setCompanyName] = useState('');
   const [branchName, setBranchName] = useState('');
   const [username, setUsername] = useState('');
   const [mobileNo, setMobileNo] = useState('');
   const [otp, setOtp] = useState('');
+  const [selectedBCompany, setSelectedCompany] = useState('');
+  const [getcompany, setGetCompany] = useState([]);
+  const [getbranch, setGetBranch] = useState([]);
   const [buttonPressed, setButtonPressed] = useState(false);
 
 
 
-  const companyData = [
-    { name: 'Company A', branches: ['Branch X'] },
-    { name: 'Company B', branches: ['Branch Y', 'Branch Z'] },
-    // Add more companies and their branches here as needed
-  ];
+  useEffect(() => {
+    getCompany();
+  }, []);
 
-  // Function to get branches based on selected company
-  const getBranches = (company) => {
-    const selectedCompany = companyData.find(item => item.name === company);
-    return selectedCompany ? selectedCompany.branches : [];
-  };
+  const getCompany = () => {
+    axios.get(`http://localhost:8080/user/getCompany`)
+      .then(response => {
+        setGetCompany(response.data);
+      })
+      .catch(error => console.error('Error fetching companies:', error));
+  }
 
+  const getBranch = (id) => {
+    axios.get(`http://localhost:8080/user/getBranch/${id}`)
+      .then(response => {
+        setGetBranch(response.data);
+        setSelectedCompany(id);
+      })
+      .catch(error => console.error('Error fetching branches:', error));
+  }
 
   const handleGenerateOTP = () => {
     if (companyName && branchName && username && mobileNo) {
       console.log('Generating OTP');
-      alert('OTP generated successfully!');
+      alert('Otp successfully!');
     } else {
       alert('Please fill in all fields');
     }
   };
 
-  const handleSubmit = () => {
-    if (companyName && branchName && username && mobileNo && otp) {
-      console.log('Submitting forget password request');
-      alert('Forget password request submitted successfully!');
-      navigation.navigate('ChangePassword');
-      
-    } else {
-      alert('Please fill in all fields');
-      
+  const handleSubmit = async () => {
+    if (!selectedBCompany) {
+      alert("Please select the company.");
+      return;
     }
+
+    if (!branchName) {
+      alert("Please select the branch.");
+      return;
+    }
+
+    if (!username) {
+      alert("Username is required.");
+      return;
+    }
+
+    if (!mobileNo) {
+      alert("mobile No. is required.");
+      return;
+    }
+
+    if (!otp) {
+      alert("OTP is required.");
+      return;
+    }
+
+    try {
+      const response = await axios.get(`http://localhost:8080/user/forget?company=${selectedBCompany}&branch=${branchName}&user=${username}&mobile=${mobileNo}&otp=${otp}`);
+      console.log(response.data); 
+      
+      if (response.data === "Now you can change your password") {
+        navigation.navigate("ChangePassword");
+        alert(response.data);
+      } else {
+        alert("User not found");
+      }
+      
+    } catch (error) {
+      console.error('Login error:', error.response.data); 
+      alert('Login Failed');
+    }
+
+   
+    
   };
+  
+  
+
 
   const buttonStyles = [
     styles.button,
@@ -67,19 +116,16 @@ export default function ForgetPassword() {
     <ImageBackground source={require('/Users/a/ContainerTrackingApp/assets/bg.png')} style={styles.background}>
       <View style={styles.container}>
       <Image source={require('/Users/a/ContainerTrackingApp/assets/logo.png')} style={styles.logo} />
+      <Image style={styles.logo} />
         <Text style={styles.title}>Forget Password</Text>
         <Picker
-          selectedValue={companyName}
+          selectedValue={selectedBCompany}
           style={styles.input}
-          onValueChange={(itemValue) => {
-            setCompanyName(itemValue);
-            const branches = getBranches(itemValue);
-            setBranchName(branches[0]); // Auto-select the first branch
-          }}
+          onValueChange={(itemValue) => getBranch(itemValue)}
         >
           <Picker.Item label="Select Company" value="" />
-          {companyData.map((company, index) => (
-            <Picker.Item key={index} label={company.name} value={company.name} />
+          {getcompany.map((company, index) => (
+            <Picker.Item key={index} label={company.companyName} value={company.companyId} />
           ))}
         </Picker>
         <Picker
@@ -88,8 +134,8 @@ export default function ForgetPassword() {
           onValueChange={(itemValue) => setBranchName(itemValue)}
         >
           <Picker.Item label="Select Branch" value="" />
-          {getBranches(companyName).map((branch, index) => (
-            <Picker.Item key={index} label={branch} value={branch} />
+          {getbranch.map((branch, index) => (
+            <Picker.Item key={index} label={branch.branchName} value={branch.branchId} />
           ))}
         </Picker>
         <TextInput
