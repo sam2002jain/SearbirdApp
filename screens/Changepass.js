@@ -1,80 +1,102 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
-
+import axios from 'axios';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image } from 'react-native';
 
 export default function Changepass() {
-
   const navigation = useNavigation();
-  const [companyName, setCompanyName] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState('');
   const [branchName, setBranchName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
-  const [buttonPressed, setButtonPressed] = useState(false);
+  const [companies, setCompanies] = useState([]);
+  const [branches, setBranches] = useState([]);
 
-  const [showPassword, setShowPassword] = useState(false); 
-  
-  // Function to toggle the password visibility state 
-  const toggleShowPassword = () => { 
-      setShowPassword(!showPassword); 
-  }; 
+  useEffect(() => {
+    getCompanies();
+  }, []);
 
-  const companyData = [
-    { name: 'Company A', branches: ['Branch X'] },
-    { name: 'Company B', branches: ['Branch Y', 'Branch Z'] },
-    // Add more companies and their branches here as needed
-  ];
+  const getCompanies = () => {
+    axios.get(`http://localhost:8080/user/getCompany`)
+      .then(response => {
+        setCompanies(response.data);
+      })
+      .catch(error => console.error('Error fetching companies:', error));
+  }
 
-  // Function to get branches based on selected company
-  const getBranches = (company) => {
-    const selectedCompany = companyData.find(item => item.name === company);
-    return selectedCompany ? selectedCompany.branches : [];
-  };
+  const getBranches = (companyId) => {
+    axios.get(`http://localhost:8080/user/getBranch/${companyId}`)
+      .then(response => {
+        setBranches(response.data);
+        setSelectedCompany(companyId);
+      })
+      .catch(error => console.error('Error fetching branches:', error));
+  }
 
-
-  const handleSubmit = () => {
-    if (companyName && branchName && username && password && password2) {
-      console.log('Submitting forget password request');
-      alert('Change password request submitted successfully!');
-      navigation.navigate('Login');
-    } else {
-      alert('Please fill in all fields');
+  const handleChangePassword = async () => {
+    if (!selectedCompany) {
+      alert("Please select the company.");
+      return;
     }
-  };
 
-  const buttonStyles = [
-    styles.button,
-    { backgroundColor: buttonPressed ? 'darkgreen' : '#6895D2' }
-  ];
+    if (!branchName) {
+      alert("Please select the branch.");
+      return;
+    }
 
-  const handleButtonPress = () => {
-    setButtonPressed(true);
-  };
+    if (!username) {
+      alert("Username is required.");
+      return;
+    }
 
-  const handleButtonRelease = () => {
-    setButtonPressed(false);
+    if (!password) {
+      alert("Password is required.");
+      return;
+    }
+
+    if (!password2) {
+      alert("Please confirm your password.");
+      return;
+    }
+
+    if (password !== password2) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`http://localhost:8080/user/changePassword`, null, {
+        params: {
+          company: selectedCompany,
+          branch: branchName,
+          user: username,
+          password: password
+        }
+      });
+      
+      alert(response.data);
+      navigation.navigate("Login");
+    } catch (error) {
+      console.error('Password change error:', error.response.data); 
+      alert('Password change failed');
+    }
   };
 
   return (
     <ImageBackground source={require('/Users/a/ContainerTrackingApp/assets/bg.png')} style={styles.background}>
       <View style={styles.container}>
-      <Image source={require('/Users/a/ContainerTrackingApp/assets/logo.png')} style={styles.logo} />
+        <Image source={require('/Users/a/ContainerTrackingApp/assets/logo.png')} style={styles.logo} />
         <Text style={styles.title}>Change Password</Text>
         <Picker
-          selectedValue={companyName}
+          selectedValue={selectedCompany}
           style={styles.input}
-          onValueChange={(itemValue) => {
-            setCompanyName(itemValue);
-            const branches = getBranches(itemValue);
-            setBranchName(branches[0]); // Auto-select the first branch
-          }}
+          onValueChange={(itemValue) => getBranches(itemValue)}
         >
           <Picker.Item label="Select Company" value="" />
-          {companyData.map((company, index) => (
-            <Picker.Item key={index} label={company.name} value={company.name} />
+          {companies.map((company, index) => (
+            <Picker.Item key={index} label={company.companyName} value={company.companyId} />
           ))}
         </Picker>
         <Picker
@@ -83,8 +105,8 @@ export default function Changepass() {
           onValueChange={(itemValue) => setBranchName(itemValue)}
         >
           <Picker.Item label="Select Branch" value="" />
-          {getBranches(companyName).map((branch, index) => (
-            <Picker.Item key={index} label={branch} value={branch} />
+          {branches.map((branch, index) => (
+            <Picker.Item key={index} label={branch.branchName} value={branch.branchId} />
           ))}
         </Picker>
         <TextInput
@@ -95,24 +117,21 @@ export default function Changepass() {
         />
         <TextInput
           style={styles.input}
-          placeholder="Enter Password"
+          placeholder="Enter New Password"
           onChangeText={setPassword}
           value={password}
-          secureTextEntry={!showPassword}
+          secureTextEntry={true}
         />
-
         <TextInput
           style={styles.input}
-          placeholder="Confirm Password"
+          placeholder="Confirm New Password"
           onChangeText={setPassword2}
           value={password2}
-          secureTextEntry={!showPassword}
+          secureTextEntry={true}
         />
-        
-
         <TouchableOpacity
-          style={[buttonStyles, styles.submitButton]}
-          onPress={handleSubmit}
+          style={styles.submitButton}
+          onPress={handleChangePassword}
         >
           <Text>Submit Changes</Text>
         </TouchableOpacity>
@@ -152,29 +171,13 @@ const styles = StyleSheet.create({
     height: 60,
     marginBottom: 5,
   },
-  
-  inputOtp: {
-    flex: 1,
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginLeft: 10,
-    marginTop: 20,
-    marginRight: 10,
-    paddingHorizontal: 10,
-    backgroundColor: 'white',
-    borderRadius: 10,
-  },
-  button: {
+  submitButton: {
     marginTop: 20,
     padding: 10,
-    width: 130,
+    width: 200,
+    backgroundColor: '#40A2D8',
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  submitButton: {
-    width: 200,
-    backgroundColor: '#40A2D8',
   },
 });

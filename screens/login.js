@@ -77,10 +77,10 @@ export default function login() {
 
     try {
       const response = await axios.get(`http://localhost:8080/user/login?company=${selectedBCompany}&branch=${branchName}&user=${username}&password=${password}&otp=${otp}`);
-      console.log(response.data); // Log the response from the server
+      console.log(response.data); 
       alert(response.data);
     } catch (error) {
-      console.error('Login error:', error.response.data); // Log the error response
+      console.error('Login error:', error.response.data); 
       alert('Login Failed');
     }
   };
