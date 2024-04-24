@@ -66,6 +66,14 @@ export default function Changepass() {
       return;
     }
 
+    const regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])[\w!@#$%^&*]+$/;
+    if (!regex.test(password)) {
+      alert(
+        'Password must contain at least one capital letter and one symbol.'
+      );
+      return;
+    }
+
     try {
       const response = await axios.post(`http://localhost:8080/user/changePassword`, null, {
         params: {
